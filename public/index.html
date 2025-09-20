@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>oneURL サマリー検索</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>oneURL サマリー検索</h1>
+      <p>URLを入力し、虫眼鏡アイコンをクリックして概要を取得してください。</p>
+    </header>
+
+    <main class="app-main">
+      <section class="search-panel">
+        <label class="search-label" for="url-input">URL</label>
+        <div class="search-box">
+          <input
+            id="url-input"
+            class="search-input"
+            type="url"
+            placeholder="https://example.com/"
+            aria-label="要約したいページのURL"
+            required
+          />
+          <button id="search-button" class="search-button" aria-label="検索">
+            <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.02 14 5 11.98 5 9.5S7.02 5 9.5 5 14 7.02 14 9.5 11.98 14 9.5 14z"
+              />
+            </svg>
+          </button>
+        </div>
+        <p id="validation-message" class="validation-message" role="status"></p>
+      </section>
+
+      <section class="summary-panel">
+        <header class="summary-header">
+          <h2>サマリー</h2>
+          <button id="reset-button" class="reset-button" type="button">クリア</button>
+        </header>
+        <article id="summary-output" class="summary-output" aria-live="polite">
+          <p class="placeholder">まだサマリーはありません。URLを入力して検索してください。</p>
+        </article>
+      </section>
+    </main>
+
+    <template id="summary-template">
+      <div class="summary-meta">
+        <p class="summary-title"></p>
+        <p class="summary-url"></p>
+      </div>
+      <p class="summary-text"></p>
+    </template>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

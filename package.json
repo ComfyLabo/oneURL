@@ -1,0 +1,15 @@
+{
+  "name": "oneurl",
+  "version": "0.1.0",
+  "description": "URL summarizer web app",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@mozilla/readability": "^0.4.4",
+    "express": "^4.18.2",
+    "jsdom": "^22.1.0",
+    "node-fetch": "^2.6.7"
+  }
+}

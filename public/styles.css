@@ -1,0 +1,238 @@
+:root {
+  --bg-color: #f6f8fb;
+  --panel-color: #ffffff;
+  --border-color: #d9e1ec;
+  --text-color: #2f3d4c;
+  --accent-color: #2563eb;
+  --accent-hover: #1d4ed8;
+  --danger-color: #ef4444;
+  --shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+  font-family: 'Segoe UI', Roboto, Hiragino Sans, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(180deg, #ebf1ff 0%, #f7faff 40%, #fdfdff 100%);
+  min-height: 100vh;
+  color: var(--text-color);
+}
+
+.app-header {
+  text-align: center;
+  padding: 48px 16px 24px;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 2.4rem;
+  font-weight: 700;
+}
+
+.app-header p {
+  margin: 12px 0 0;
+  color: #50627a;
+  font-size: 1rem;
+}
+
+.app-main {
+  display: grid;
+  grid-template-columns: minmax(280px, 400px) minmax(340px, 1fr);
+  gap: 32px;
+  padding: 0 24px 48px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.search-panel,
+.summary-panel {
+  padding: 28px;
+  background-color: var(--panel-color);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.search-label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.search-box {
+  display: flex;
+  align-items: stretch;
+  background-color: #f8fafc;
+  border: 2px solid transparent;
+  border-radius: 18px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-box:focus-within {
+  border-color: rgba(37, 99, 235, 0.5);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.15);
+}
+
+.search-input {
+  flex: 1;
+  padding: 14px 16px;
+  border: none;
+  border-radius: 18px 0 0 18px;
+  outline: none;
+  font-size: 1rem;
+  background-color: transparent;
+}
+
+.search-input::placeholder {
+  color: #94a3b8;
+}
+
+.search-button {
+  width: 56px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 0 18px 18px 0;
+  background: linear-gradient(135deg, var(--accent-color), #60a5fa);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  color: #fff;
+}
+
+.search-button:focus-visible,
+.search-button:hover {
+  outline: none;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+}
+
+.search-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
+}
+
+.search-icon {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.validation-message {
+  min-height: 1.4em;
+  margin: 12px 0 0;
+  font-size: 0.9rem;
+  color: var(--danger-color);
+}
+
+.summary-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.summary-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.reset-button {
+  border: none;
+  border-radius: 1rem;
+  padding: 8px 16px;
+  background-color: #e2e8f0;
+  color: #475569;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.reset-button:hover,
+.reset-button:focus-visible {
+  background-color: #cbd5f5;
+  color: var(--accent-color);
+}
+
+.summary-output {
+  flex: 1;
+  background-color: #f8fafc;
+  border-radius: 16px;
+  padding: 18px 20px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  overflow-y: auto;
+  min-height: 200px;
+  line-height: 1.6;
+}
+
+.placeholder {
+  color: #94a3b8;
+}
+
+.summary-meta {
+  margin-bottom: 12px;
+  border-left: 3px solid var(--accent-color);
+  padding-left: 12px;
+}
+
+.summary-title {
+  margin: 0;
+  font-weight: 700;
+}
+
+.summary-url {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  color: #64748b;
+  word-break: break-all;
+}
+
+.summary-text {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #64748b;
+}
+
+.loading::after {
+  content: '';
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #cbd5f5;
+  border-top-color: var(--accent-color);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 960px) {
+  .app-main {
+    grid-template-columns: 1fr;
+    padding: 0 16px 32px;
+  }
+
+  .search-panel,
+  .summary-panel {
+    padding: 24px;
+  }
+}
