@@ -8,6 +8,14 @@ URLを入力すると、そのページの本文を取得して簡易的なサ�
 npm install
 ```
 
+環境変数 `GEMINI_API_KEY` に Google AI Studio から取得した API キーを設定してください。
+
+```bash
+export GEMINI_API_KEY="your-key"
+# 任意: 使用するモデルを指定（既定は gemini-1.5-flash）
+export GEMINI_MODEL="gemini-1.5-flash"
+```
+
 ## 開発サーバーの起動
 
 ```bash
@@ -26,7 +34,7 @@ npm install
 docker build -t oneurl-app .
 
 # コンテナの起動
-docker run --rm -p 3000:3000 oneurl-app
+docker run --rm -p 3000:3000 -e GEMINI_API_KEY=your-key oneurl-app
 ```
 
 コンテナが起動したら <http://localhost:3000> でアプリを利用できます。クラウドサービスにデプロイする場合は、このイメージをレジストリにプッシュして各サービスの手順に従ってください。
@@ -48,7 +56,7 @@ docker run --rm -p 3000:3000 oneurl-app
 
 - フロントエンドは `public/` 配下に配置しています。
 - バックエンドは Node.js/Express を利用し、`/api/summarize` でページを取得・要約します。
-- 要約処理は `@mozilla/readability` とシンプルな文章抽出ロジックで行っています。
+- 要約処理は `@mozilla/readability` で本文を抽出し、`GEMINI_API_KEY` が設定されている場合は Gemini API で要約、未設定の場合は簡易ローカルロジックで要約します。
 
 ## 注意事項
 
