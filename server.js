@@ -81,7 +81,8 @@ app.listen(PORT, () => {
 async function generateSummary(text, sourceUrl) {
   if (process.env.GEMINI_API_KEY) {
     try {
-      return await summarizeWithGemini(text, sourceUrl);
+      const summary = await summarizeWithGemini(text, sourceUrl);
+      return toSingleLine(summary);
     } catch (error) {
       console.error('Gemini API summary failed, falling back to local summary:', error);
     }
@@ -109,14 +110,13 @@ async function summarizeWithGemini(text, sourceUrl) {
     throw new Error('Gemini API returned empty response.');
   }
 
-  return summary.trim();
+  return toSingleLine(summary);
 }
 
 function buildGeminiPrompt(text, sourceUrl) {
   const instructions = [
-    '次のウェブページ本文を日本語で簡潔に要約してください。',
-    'ポイントは3〜5個以内でまとめ、重要なキーワードはそのまま残してください。',
-    '全体の長さは400文字以内を目安にしてください。',
+    '次のウェブページ本文を日本語で要約してください。',
+    '重要なキーワードを残しつつポイントを含め、改行せず一行で120文字以内に収めてください。',
     `元のURL: ${sourceUrl}`,
     '',
     '--- 本文 ---',
@@ -136,24 +136,33 @@ function truncateForGemini(text) {
 }
 
 function summarizeTextLocally(text) {
-  const normalized = text.replace(/\s+/g, ' ').trim();
+  const normalized = text.replace(/[\r\n\t]+/g, ' ').replace(/\s{2,}/g, ' ').trim();
   if (!normalized) {
     return '本文が取得できませんでした。';
   }
 
   const sentences = normalized.match(/[^。！？!?\n]+[。！？!?]?/g) || [normalized];
-  const maxSentences = 5;
-  let summary = '';
-
+  const summarySentences = [];
   for (const sentence of sentences) {
-    if ((summary + sentence).length > 600 || summary.split(/[。！？!?]/).length > maxSentences) {
-      break;
+    const cleaned = sentence.trim();
+    if (!cleaned) {
+      continue;
     }
-    summary += sentence;
-    if (!sentence.match(/[。！？!?]$/)) {
-      summary += '。';
+    summarySentences.push(cleaned);
+    const current = summarySentences.join(' ');
+    if (current.length >= 120 || summarySentences.length >= 2) {
+      break;
     }
   }
 
-  return summary.trim();
+  let summary = summarySentences.join(' ');
+  if (summary.length > 120) {
+    summary = `${summary.slice(0, 117)}…`;
+  }
+
+  return summary || normalized.slice(0, 120);
+}
+
+function toSingleLine(text) {
+  return text.replace(/[\r\n]+/g, ' ').replace(/\s{2,}/g, ' ').trim();
 }
