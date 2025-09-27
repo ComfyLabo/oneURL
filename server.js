@@ -79,16 +79,20 @@ app.listen(PORT, () => {
 });
 
 async function generateSummary(text, sourceUrl) {
+  let summary;
   if (process.env.GEMINI_API_KEY) {
     try {
-      const summary = await summarizeWithGemini(text, sourceUrl);
-      return toSingleLine(summary);
+      summary = await summarizeWithGemini(text, sourceUrl);
     } catch (error) {
       console.error('Gemini API summary failed, falling back to local summary:', error);
     }
   }
 
-  return summarizeTextLocally(text);
+  if (!summary) {
+    summary = summarizeTextLocally(text);
+  }
+
+  return formatSummary(summary);
 }
 
 async function summarizeWithGemini(text, sourceUrl) {
@@ -110,7 +114,7 @@ async function summarizeWithGemini(text, sourceUrl) {
     throw new Error('Gemini API returned empty response.');
   }
 
-  return toSingleLine(summary);
+  return summary.trim();
 }
 
 function buildGeminiPrompt(text, sourceUrl) {
@@ -141,28 +145,79 @@ function summarizeTextLocally(text) {
     return '本文が取得できませんでした。';
   }
 
-  const sentences = normalized.match(/[^。！？!?\n]+[。！？!?]?/g) || [normalized];
-  const summarySentences = [];
+  const sentences = normalized.match(/[^。！？!?\n]+[。！？!?]?/g) || [];
+  const cleanedSentences = sentences
+    .map((sentence) => sentence.replace(/\s+/g, ' ').trim())
+    .filter(Boolean);
+
+  if (!cleanedSentences.length) {
+    return normalized;
+  }
+
+  if (cleanedSentences.length === 1) {
+    return cleanedSentences[0];
+  }
+
+  const tokenFrequency = buildTokenFrequency(cleanedSentences);
+  const scored = cleanedSentences
+    .map((sentence, index) => ({
+      sentence,
+      score: scoreSentence(sentence, index, tokenFrequency)
+    }))
+    .sort((a, b) => b.score - a.score);
+
+  const bestSentence = (scored[0] && scored[0].sentence) || cleanedSentences[0];
+  return bestSentence;
+}
+
+function buildTokenFrequency(sentences) {
+  const frequency = new Map();
   for (const sentence of sentences) {
-    const cleaned = sentence.trim();
-    if (!cleaned) {
-      continue;
-    }
-    summarySentences.push(cleaned);
-    const current = summarySentences.join(' ');
-    if (current.length >= 120 || summarySentences.length >= 2) {
-      break;
+    const tokens = extractTokens(sentence);
+    const uniqueTokens = new Set(tokens);
+    for (const token of uniqueTokens) {
+      frequency.set(token, (frequency.get(token) || 0) + 1);
     }
   }
+  return frequency;
+}
 
-  let summary = summarySentences.join(' ');
-  if (summary.length > 120) {
-    summary = `${summary.slice(0, 117)}…`;
+function scoreSentence(sentence, index, frequency) {
+  const tokens = extractTokens(sentence);
+  if (!tokens.length) {
+    return 0;
   }
 
-  return summary || normalized.slice(0, 120);
+  const keywordScore = tokens.reduce((sum, token) => sum + (frequency.get(token) || 0), 0);
+  const idealLength = Number(process.env.SUMMARY_IDEAL_LENGTH || 80);
+  const lengthPenalty = Math.abs(sentence.length - idealLength) * 0.05;
+  const positionBoost = index === 0 ? 1.1 : index === 1 ? 1.05 : 1;
+
+  return keywordScore * positionBoost - lengthPenalty;
+}
+
+function extractTokens(sentence) {
+  return (
+    sentence.match(/[\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}a-zA-Z0-9]{2,}/gu) || []
+  ).map((token) => token.toLowerCase());
 }
 
 function toSingleLine(text) {
-  return text.replace(/[\r\n]+/g, ' ').replace(/\s{2,}/g, ' ').trim();
+  return text.replace(/[\s\u3000]+/gu, ' ').trim();
+}
+
+function formatSummary(text) {
+  if (!text) {
+    return '本文が取得できませんでした。';
+  }
+
+  const maxChars = Number(process.env.SUMMARY_MAX_CHARS || 120);
+  let singleLine = toSingleLine(text);
+
+  if (singleLine.length > maxChars) {
+    const safeLength = Math.max(1, maxChars - 1);
+    singleLine = `${singleLine.slice(0, safeLength)}…`;
+  }
+
+  return singleLine;
 }
